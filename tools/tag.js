@@ -2,19 +2,39 @@
 const Tag = require('../controllers/mongo/models/tag.js');
 const { log, warn, info, err} = require('./console.js');
 
+const { trusted_tags } = require('../.trusted.json');
+const tagCap = 64;
+
+const checkValidTags = async () => {
+  if (trusted_tags.length <= tagCap) {
+    for (let t = 0; t < trusted_tags.length; t++) {
+      const { id, name } = trusted_tags[t];
+      const tag = await Tag.findOne({id: id});
+      if (!tag) {
+	info(`\n  RuuviTag ${id} does not pre-exist`, true);
+	const wasTagSetupSuccess = setTag(
+	  id,
+	  name);
+	wasTagSetupSuccess
+	  ? log(`\n  RuuviTag ${id} setup successful`, true)
+	  : err(`\n  RuuviTag ${id} setup failed`, true);
+      } else {
+	log(`\n  RuuviTag ${id} pre-exists`,false);
+      }
+    }
+  } else {
+    warn(`WARN: `,true);
+    warn(`Driver cannot process all whitelisted RuuviTags. Please check the application settings or move some of the ${trusted_tags.length} RuuviTags for another driver.`, false);
+  }
+};
+
 const checkTag = async (tagID) => {
   const foundTag = await Tag.findOne({id: tagID});
   
   if (!foundTag) {
-    warn(`\n  RuuviTag ${tagID} does not pre-exist`, true);
-    const wasTagSetupSuccess = setTag(tagID);
-    wasTagSetupSuccess
-      ? log(`\n  RuuviTag ${tagID} setup successful`, true)
-      : err(`\n  RuuviTag ${tagID} setup failed`, true);
-    return {initial: false, addedNew: wasTagSetupSuccess};
+    return false;
   } else {
-    log(`\n  RuuviTag ${tagID} pre-exists`, false);
-    return {initial: true, addedNew: false};
+    return true;
   }
 };
 
@@ -22,17 +42,16 @@ const findTag = async (tagID) => {
   let foundTag = await Tag.findOne({id: tagID});
   if (!foundTag) {
     warn(`\n  RuuviTag ${tagID} does not pre-exist`, true);
-    const wasTagSetupSuccess = setTag(tagID);
-    foundTag = await Tag.findOne({id: tagID});
+    return null;
   }
   info(`\n  Found RuuviTag ${tagID}`, false);
   return foundTag;
 };
 
-const setTag = async (tagID) => {
+const setTag = async (tagID, name) => {
   info(`\n  Saving new RuuviTag ${tagID}...`, false);
   const newTag = new Tag({
-    name: `newtag-${tagID}`,
+    name: name ? name : `newtag-${tagID}`,
     id: tagID
   });
 
@@ -46,6 +65,7 @@ const setTag = async (tagID) => {
   }
 };
 
+exports.checkWhitelist = checkValidTags;
 exports.checkTag = checkTag;
 exports.findTag = findTag;
 exports.setTag = setTag;
