@@ -9,25 +9,29 @@ const findMeasurement = async (timestamp) => {};
 
 const setMeasurement = async (measurement, tagID, datetime) => {
   info(`\n  Checking RuuviTag ${tagID}...`);
-  checkTag(tagID);
-  log('  Done');
-  info(`  Saving new Measurement...`);
-  let newMeasurement = new Measurement({
-    timestamp: datetime,
-    driver: process.env.DRIVER_ID.toString(),
-    rssi: measurement.rssi,
-    temperature: measurement.temperature,
-    humidity: measurement.humidity,
-    pressure: measurement.pressure,
-    battery: measurement.battery,
-    tag: tagID
-  });
-  try {
-    newMeasurement = await newMeasurement.save();
-    log(`\n  Measurement ${measurement.measurementSequenceNumber} successfully saved\n`, false);
-    warn(newMeasurement, false);
-  } catch (e) {
-    err(`\n  Failed saving measurement ${measurement.measurementSequenceNumber}`, true);
+  const tagChecked = await checkTag(tagID);
+  if (tagChecked) {
+    log('  Done');
+    info(`  Saving new Measurement...`);
+    let newMeasurement = new Measurement({
+      timestamp: datetime,
+      driver: process.env.DRIVER_ID.toString(),
+      rssi: measurement.rssi,
+      temperature: measurement.temperature,
+      humidity: measurement.humidity,
+      pressure: measurement.pressure,
+      battery: measurement.battery,
+      tag: tagID
+    });
+    try {
+      newMeasurement = await newMeasurement.save();
+      log(`  Measurement ${measurement.measurementSequenceNumber} successfully saved\n`, false);
+      warn(newMeasurement, false);
+    } catch (e) {
+      err(`  Failed saving measurement ${measurement.measurementSequenceNumber}`, true);
+    }
+  } else {
+    warn(`\n  RuuviTag ${tagID} is not whitelisted\n  Ignoring measurement ${measurement.measurementSequenceNumber} from it, not saved.`, true);
   }
 };
 

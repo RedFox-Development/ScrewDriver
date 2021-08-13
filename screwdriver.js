@@ -26,6 +26,7 @@ mongoose.set('useCreateIndex', true);
 // definitions
 const oneMinute = 60*1000;
 const fiveMinutes = 5*oneMinute;
+let measurements = [];
 
 // init
 
@@ -47,10 +48,10 @@ const createDriver = () => {
   });
   driver.route('/')
     .get((req, res) => {
-      res.json({"measurement": {"temperature":0}});
+      res.json({"measurement": measurements[0]});
     })
     .post((req,res) => {
-      res.json({"measurement": {"temperature":0}});
+      res.json({"measurement": measurements[0]});
     });
 
   return driver;
@@ -70,6 +71,9 @@ const startScrewingAround = () => {
       if (timestamp - lastUpdate > fiveMinutes && tagChecked) {
         lastUpdate = timestamp;
         setMeasurement(data, tag.id, timestamp);
+	if (tag.id === 'ef9d0e26ed52') {
+	  measurements[0] = data;
+	}
       } else {
         info(`\n  ${tagChecked ? 'Trusted ' : 'Unknown '}RuuviTag ${tag.id}, measurement ${data.measurementSequenceNumber} ignored.`, false);
       }
