@@ -1,0 +1,12 @@
+:root {
+  --gray_light: rgb(242,242,242);
+  --gray_dark: rgb(40,40,40);
+  --red_custom: rgb(220,30,50);
+  --cold: linear-gradient(90deg, rgba(9,9,121,1) 25%, rgba(0,255,93,1) 75%);
+  --warm: linear-gradient(90deg, rgba(78,251,0,1) 20%, rgba(255,119,0,1) 80%);
+  --low_w: rgb(3,252,102);
+  --med_w: rgb(148,252,3);
+  --elev_w: rgb(252,190,3);
+  --high_w: rgb(252,48,3);
+}
+
