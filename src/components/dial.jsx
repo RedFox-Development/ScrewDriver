@@ -1,6 +1,21 @@
 import React, { useRef, useEffect } from 'react';
 import SvgGauge from 'svg-gauge';
+
+import { getTempSettings } from '../tools/tempOptions';
 import '../styles/gauge.css';
+
+//"rgb(3,252,102)";
+//          } else if (value < 25) {
+  //          return "rgb(148,252,3)";
+    //      } else if (value < 28) {
+      //      return "rgb(252,190,3)";
+        //  } else {
+          //  return "rgb(252,48,3)";
+
+
+const WithBar = ({value}) => {
+  return value;
+};
 
 const defaultGaugeOptions = {
   animationDuration: 2,
@@ -15,12 +30,18 @@ const defaultGaugeOptions = {
  * fridge
  * outdoor-summer
  * sauna
+ * indoor
  */
 const tempGaugeOptions = (mode) => {
+  const coldModes = [];
+  const warmModes = [];
+
+  const tempOpt = getTempSettings(mode);
+
   switch (mode) {
     case 'outdoor-winter': return {
       min: -50,
-      max: 30,
+      max: 20,
       valueDialClass: 'value-cold',
       valueClass: 'value-text-cold',
       color: function(value) {
@@ -243,6 +264,16 @@ const Gauge = ({type, mode, value, name}) => {
   return <section ref={gaugeEl} className='gauge-container'/>;
 };
 
+const Label = ({type, mode}) => {
+  switch (type) {
+    case 'temperature': {};
+    case 'humidity': {};
+    case 'pressure': {};
+    case 'voltage': {};
+    case 'rssi': {};
+    default: return null;
+  }
+};
 
 export const Temperature = (props) => {
   return <section id={props.id} data-testid={props.id} >

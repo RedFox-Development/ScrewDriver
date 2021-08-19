@@ -3,6 +3,18 @@ import React from 'react';
 import axios from 'axios';
 
 import { Temperature, Humidity, Pressure, Voltage, RSSI } from './dial';
+import Measurement from './measurement';
+
+const sampleMeasurement = {
+  timestamp: 1628881647805,
+  driver: 'test-driver',
+  rssi: -20,
+  temperature: 28.47,
+  humidity: 57.0234,
+  pressure: 99303,
+  battery: 3003,
+  tag: 'tagID'
+};
 
 class RuuviTag extends React.Component {
   constructor(props) {
@@ -10,8 +22,8 @@ class RuuviTag extends React.Component {
     this.state = {
       name: props.name,
       id: props.id,
-      type: props.tagType,
-      mode: props.tagMode ?? null,
+      mode: props.tagMode ?? 'default',
+      gauges: props.useGauges ?? false,
       measurement: null
     };
   }
@@ -39,33 +51,15 @@ class RuuviTag extends React.Component {
     this.getReadings();
   }
 
-  getTemperature() {
-    return this.state.measurement.temperature;
-  }
-  getHumidity() {
-    return this.state.measurement.humidity;
-  }
-  getPressure() {
-    return this.state.measurement.pressure;
-  }
-  getVoltage() {
-    return this.state.measurement.battery;
-  }
-  getRSSI() {
-    return this.state.measurement.rssi;
+  getMinuteInMS() {
+    return 1000*60;
   }
 
   render() {
-    return <section>
-      <h3>{this.state.name}</h3>
-      {this.state.measurement && <Temperature
-	mode='indoor'
-	value={this.getTemperature()} />}
-      {this.state.measurement && <p>Relative humidity: {this.getHumidity()} %</p>}
-      {this.state.measurement && <p>Atmospheric pressure: {this.getPressure()/100} hPa</p>}
-      {this.state.measurement && <p>Battery: {this.getVoltage()/1000} V</p>}
-      {this.state.measurement && <p>RSSI: {this.getRSSI()}</p>}
-    </section>;
+    setTimeout(() => this.getReadings(), this.getMinuteInMS());
+    return this.state.measurement
+      ? <Measurement {...sampleMeasurement} tagName={this.state.name} withGauges={true} tagMode={this.state.mode} />
+      : <h3>{this.state.name}</h3>;
   }
 }
 

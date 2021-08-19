@@ -24,7 +24,7 @@ const Frontend = () => {
 
   return <section>
     <p>current</p>
-    <RuuviTag name='ketturuuvi' id='ef9d0e26ed52' type='indoor' />
+    <RuuviTag name='ketturuuvi' id='ef9d0e26ed52' tagMode='indoor' />
   </section>;
 };
 
