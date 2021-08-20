@@ -24,18 +24,23 @@ mongoose.set('useUnifiedTopology', true);
 mongoose.set('useCreateIndex', true);
 
 // definitions
+const { trusted_tags } = require('./.trusted.json');
+
 const oneMinute = 60*1000;
-const fiveMinutes = 5*oneMinute;
+const measurementSaveInterval = Math.floor(0.5*oneMinute);
+
 let measurements = [];
 
 // init
 
-try {
-  mongoose.connect(process.env.MONGO);
-  log('\n  MongoDB Atlas: connected', true);
-} catch (e) {
-  warn('\n  MongoDB Atlas: connection failed', true);
-}
+const initMongoose = () => {
+  try {
+    mongoose.connect(process.env.MONGO);
+    log('\n  MongoDB Atlas: connected', true);
+  } catch (e) {
+    warn('\n  MongoDB Atlas: connection failed', true);
+  }
+};
 
 const createDriver = () => {
   const driver = express();
@@ -46,45 +51,56 @@ const createDriver = () => {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
   });
+  driver.set('json spaces', 2);
   driver.route('/')
     .get((req, res) => {
       res.json({"measurement": measurements[0]});
-    })
-    .post((req,res) => {
-      res.json({"measurement": measurements[0]});
+    });
+  driver.route('/data/:id')
+    .get(async (req, res) => {
+      const tagIndex = trusted_tags.findIndex(tag => tag.id === req.params.id);
+      const data = measurements[tagIndex];
+      res.json(data);
     });
 
   return driver;
 };
 
 const startScrewingAround = () => {
-  checkWhitelist();
-  ruuvi.on('found', tag => {
-    let lastUpdate = null;
-    const tagChecked = checkTag(tag.id);
-    info(
-      `\n  Found a ${tagChecked
-        ? 'new'
-        : 'pre-existing'} RuuviTag, ID: ${tag.id}`, false);
-    tag.on('updated', data => {
-      const timestamp = new Date().valueOf();
-      if (timestamp - lastUpdate > fiveMinutes && tagChecked) {
-        lastUpdate = timestamp;
-        setMeasurement(data, tag.id, timestamp);
-	if (tag.id === 'ef9d0e26ed52') {
-	  measurements[0] = data;
-	}
-      } else {
-        info(`\n  ${tagChecked ? 'Trusted ' : 'Unknown '}RuuviTag ${tag.id}, measurement ${data.measurementSequenceNumber} ignored.`, false);
-      }
-      // log(JSON.stringify(data, null, '  '), false);
+  checkWhitelist().then(() => {
+    ruuvi.on('found', tag => {
+      let lastUpdate = null;
+      let tagIndex = null;
+      const tagChecked = checkTag(tag.id);
+      info(
+        `\n  Found a ${!tagChecked
+          ? 'new'
+          : 'pre-existing'} RuuviTag, ID: ${tag.id}`, false);
+      // log(JSON.stringify(tag, null, '  '),false);
+      tag.on('updated', data => {
+        if (tagChecked) {
+	  tagIndex = trusted_tags.findIndex(trusted_tag => trusted_tag.id === tag.id);
+	  const timestamp = new Date().valueOf();
+          if (timestamp - lastUpdate > measurementSaveInterval && tagIndex > -1) {
+            lastUpdate = timestamp;
+            setMeasurement(data, tag.id, timestamp);
+            measurements[tagIndex] = {...data, id: tag.id};
+  
+            // log(JSON.stringify(data, null, '  '),false);
+          } else {
+            info(`\n  Trusted RuuviTag ${tag.id}, measurement ${data.measurementSequenceNumber} ignored.`, false);
+          }
+
+	} else {
+          info(`\n  Unknown RuuviTag ${tag.id}, measurement ${data.measurementSequenceNumber} ignored.`, false);
+        }
+      });
+    });
+
+    ruuvi.on('warning', message => {
+      err('\n  Ruuvi warning', true);
     });
   });
-
-  ruuvi.on('warning', message => {
-    err('\n  Ruuvi warning', true);
-  });
-  return true;
 };
 
 const stopScrewingAround = () => {
@@ -101,8 +117,9 @@ module.exports.stop = stopScrewingAround;
 if (module.parent === null) {
   const driver = createDriver();
   const port = process.env.DRIVER_PORT || 4001;
-  startScrewingAround();
+  initMongoose();
   driver.listen(port, () => {
     info(`\n  ScrewDriver running on port ${port}`, true);
+    startScrewingAround();
   });
 }

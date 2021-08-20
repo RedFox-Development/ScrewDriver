@@ -5,10 +5,12 @@
   "main": "screwdriver.js",
   "license": "MIT",
   "dependencies": {
+    "apollo-server-express": "^3.1.2",
     "body-parser": "^1.19.0",
     "chalk": "^4.1.2",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "graphql": "^15.5.1",
     "mongoose": "^5.13.6",
     "node-ruuvitag": "^4.6.1"
   },

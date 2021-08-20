@@ -8,10 +8,7 @@ const checkMeasurement = async (timestamp) => {};
 const findMeasurement = async (timestamp) => {};
 
 const setMeasurement = async (measurement, tagID, datetime) => {
-  info(`\n  Checking RuuviTag ${tagID}...`);
-  const tagChecked = await checkTag(tagID);
-  if (tagChecked) {
-    log('  Done');
+  if (await checkTag(tagID)) {
     info(`  Saving new Measurement...`);
     let newMeasurement = new Measurement({
       timestamp: datetime,
@@ -21,17 +18,21 @@ const setMeasurement = async (measurement, tagID, datetime) => {
       humidity: measurement.humidity,
       pressure: measurement.pressure,
       battery: measurement.battery,
+      measurementSequenceNumber: measurement.measurementSequenceNumber,
       tag: tagID
     });
     try {
-      newMeasurement = await newMeasurement.save();
-      log(`  Measurement ${measurement.measurementSequenceNumber} successfully saved\n`, false);
+      newMeasurement = await newMeasurement.save(); 
+      log(`\n  Measurement ${newMeasurement.measurementSequenceNumber} successfully saved`, false);
       warn(newMeasurement, false);
+      return newMeasurement;
     } catch (e) {
-      err(`  Failed saving measurement ${measurement.measurementSequenceNumber}`, true);
+      err(`\n  Failed saving measurement ${measurement.measurementSequenceNumber}`, true);
+      return null;
     }
   } else {
     warn(`\n  RuuviTag ${tagID} is not whitelisted\n  Ignoring measurement ${measurement.measurementSequenceNumber} from it, not saved.`, true);
+    return null;
   }
 };
 

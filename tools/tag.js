@@ -1,4 +1,6 @@
 
+// imports
+
 const Tag = require('../controllers/mongo/models/tag.js');
 const { log, warn, info, err} = require('./console.js');
 
@@ -6,9 +8,10 @@ const { trusted_tags } = require('../.trusted.json');
 const tagCap = 64;
 
 const checkValidTags = async () => {
+  info('\n  Checking RuuviTag whitelist...',false);
   if (trusted_tags.length <= tagCap) {
-    for (let t = 0; t < trusted_tags.length; t++) {
-      const { id, name } = trusted_tags[t];
+    for (trusted_tag of trusted_tags) {
+      const { id, name } = trusted_tag;
       const tag = await Tag.findOne({id: id});
       if (!tag) {
 	info(`\n  RuuviTag ${id} does not pre-exist`, true);
@@ -16,26 +19,21 @@ const checkValidTags = async () => {
 	  id,
 	  name);
 	wasTagSetupSuccess
-	  ? log(`\n  RuuviTag ${id} setup successful`, true)
-	  : err(`\n  RuuviTag ${id} setup failed`, true);
+	  ? log(`\n  New whitelisted RuuviTag ${id} setup successful`, true)
+	  : err(`\n  New whitelisted RuuviTag ${id} setup failed`, true);
       } else {
-	log(`\n  RuuviTag ${id} pre-exists`,false);
+	log(`\n  Whitelisted RuuviTag ${id} pre-exists`,false);
       }
     }
+    log('\n  Whitelist check-up done',false);
   } else {
-    warn(`WARN: `,true);
-    warn(`Driver cannot process all whitelisted RuuviTags. Please check the application settings or move some of the ${trusted_tags.length} RuuviTags for another driver.`, false);
+    warn(`\n  WARN: `,true);
+    warn(`  Driver cannot process all whitelisted RuuviTags. Please check the application settings or move some of the ${trusted_tags.length} RuuviTags for another driver.`, false);
   }
 };
 
 const checkTag = async (tagID) => {
-  const foundTag = await Tag.findOne({id: tagID});
-  
-  if (!foundTag) {
-    return false;
-  } else {
-    return true;
-  }
+  return await Tag.findOne({id: tagID}) ? true : false;
 };
 
 const findTag = async (tagID) => {

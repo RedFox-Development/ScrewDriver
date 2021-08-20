@@ -41,6 +41,10 @@ const MeasurementSchema = new mongoose.Schema({
   tag: {
     type: String,
     required: true
+  },
+  measurementSequenceNumber: {
+    type: Number,
+    required: true
   }
 });
 
