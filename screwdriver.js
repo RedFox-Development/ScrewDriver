@@ -10,7 +10,7 @@ const express = require('express');
 
 // project tools
 const { log, warn, info, err} = require('./tools/console.js');
-const { checkWhitelist, checkTag, findTag, setTag } = require('./tools/tag.js');
+const { checkWhitelist, isTagWhitelisted, getTagIndex, findTag, setTag } = require('./tools/tag.js');
 const { setMeasurement } = require('./tools/measurement.js');
 
 // other project files
@@ -67,36 +67,32 @@ const createDriver = () => {
 };
 
 const startScrewingAround = () => {
-  checkWhitelist().then(() => {
+  checkWhitelist().then(checkupComplete => {
     ruuvi.on('found', tag => {
       let lastUpdate = null;
       let tagIndex = null;
-      const tagChecked = checkTag(tag.id);
-      info(
-        `\n  Found a ${!tagChecked
-          ? 'new'
-          : 'pre-existing'} RuuviTag, ID: ${tag.id}`, false);
-      // log(JSON.stringify(tag, null, '  '),false);
-      tag.on('updated', data => {
-        if (tagChecked) {
-	  tagIndex = trusted_tags.findIndex(trusted_tag => trusted_tag.id === tag.id);
-	  const timestamp = new Date().valueOf();
-          if (timestamp - lastUpdate > measurementSaveInterval && tagIndex > -1) {
-            lastUpdate = timestamp;
-            setMeasurement(data, tag.id, timestamp);
-            measurements[tagIndex] = {...data, id: tag.id};
-  
-            // log(JSON.stringify(data, null, '  '),false);
-          } else {
-            info(`\n  Trusted RuuviTag ${tag.id}, measurement ${data.measurementSequenceNumber} ignored.`, false);
-          }
-
-	} else {
-          info(`\n  Unknown RuuviTag ${tag.id}, measurement ${data.measurementSequenceNumber} ignored.`, false);
+      isTagWhitelisted(tag.id).then(isIt => {
+	if (isIt) {
+	  info(`\n  Found a pre-existing RuuviTag, ID: ${tag.id}.`,false);
+	  tag.on('updated', data => {
+	    const timestamp = new Date().valueOf();
+	    tagIndex = getTagIndex(tag.id);
+	    if (timestamp - lastUpdate > measurementSaveInterval && tagIndex > -1) {
+	      lastUpdate = timestamp;
+	      setMeasurement(data, tag.id, timestamp);
+	      measurements[tagIndex] = {...data, id: tag.id};
+              // log(JSON.stringify(data, null, '  '),false);
+            } else {
+              info(`\n  Trusted RuuviTag ${tag.id}, measurement ${data.measurementSequenceNumber} ignored.`, false);
+            }
+	  });
+        } else {
+          info(`\n  Found a new RuuviTag, ID: ${tag.id}\n  Ignoring measurements from RuuviTag ${tag.id}.`, false);
         }
       });
+      // log(JSON.stringify(tag, null, '  '),false);
     });
-
+    
     ruuvi.on('warning', message => {
       err('\n  Ruuvi warning', true);
     });

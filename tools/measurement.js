@@ -1,5 +1,5 @@
 
-const { checkTag } = require('./tag.js');
+const { isTagWhitelisted } = require('./tag.js');
 const Measurement = require('../controllers/mongo/models/measurement.js');
 const { err, info, log, warn } = require('./console.js');
 
@@ -8,8 +8,8 @@ const checkMeasurement = async (timestamp) => {};
 const findMeasurement = async (timestamp) => {};
 
 const setMeasurement = async (measurement, tagID, datetime) => {
-  if (await checkTag(tagID)) {
-    info(`  Saving new Measurement...`);
+  if (isTagWhitelisted(tagID)) {
+    info(`\n  Saving new Measurement...`);
     let newMeasurement = new Measurement({
       timestamp: datetime,
       driver: process.env.DRIVER_ID.toString(),
@@ -23,11 +23,11 @@ const setMeasurement = async (measurement, tagID, datetime) => {
     });
     try {
       newMeasurement = await newMeasurement.save(); 
-      log(`\n  Measurement ${newMeasurement.measurementSequenceNumber} successfully saved`, false);
+      log(`  Measurement ${newMeasurement.measurementSequenceNumber} successfully saved`, false);
       warn(newMeasurement, false);
       return newMeasurement;
     } catch (e) {
-      err(`\n  Failed saving measurement ${measurement.measurementSequenceNumber}`, true);
+      err(`  Failed saving measurement ${measurement.measurementSequenceNumber}`, true);
       return null;
     }
   } else {

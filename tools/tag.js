@@ -26,14 +26,21 @@ const checkValidTags = async () => {
       }
     }
     log('\n  Whitelist check-up done',false);
+    return true;
   } else {
     warn(`\n  WARN: `,true);
     warn(`  Driver cannot process all whitelisted RuuviTags. Please check the application settings or move some of the ${trusted_tags.length} RuuviTags for another driver.`, false);
+    return false;
   }
 };
 
-const checkTag = async (tagID) => {
-  return await Tag.findOne({id: tagID}) ? true : false;
+const isTagWhitelisted = async (tagID) => {
+  const tag = await Tag.findOne({id: tagID});
+  return tag ? tag.id === tagID ? true : false : false;
+};
+
+const getTagIndex = (tagID) => {
+  return trusted_tags.findIndex(tag => tag.id === tagID) ?? -1;
 };
 
 const findTag = async (tagID) => {
@@ -64,7 +71,8 @@ const setTag = async (tagID, name) => {
 };
 
 exports.checkWhitelist = checkValidTags;
-exports.checkTag = checkTag;
+exports.isTagWhitelisted = isTagWhitelisted;
+exports.getTagIndex = getTagIndex;
 exports.findTag = findTag;
 exports.setTag = setTag;
 
