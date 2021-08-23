@@ -9,7 +9,7 @@ const findMeasurement = async (timestamp) => {};
 
 const setMeasurement = async (measurement, tagID, datetime) => {
   if (isTagWhitelisted(tagID)) {
-    info(`\n  Saving new Measurement...`);
+    info(`\n  MEASUREMENT: Saving...`);
     let newMeasurement = new Measurement({
       timestamp: datetime,
       driver: process.env.DRIVER_ID.toString(),
@@ -23,15 +23,15 @@ const setMeasurement = async (measurement, tagID, datetime) => {
     });
     try {
       newMeasurement = await newMeasurement.save(); 
-      log(`  Measurement ${newMeasurement.measurementSequenceNumber} successfully saved`, false);
+      log(`  MEASUREMENT: saved #${newMeasurement.measurementSequenceNumber}`, false);
       warn(newMeasurement, false);
       return newMeasurement;
     } catch (e) {
-      err(`  Failed saving measurement ${measurement.measurementSequenceNumber}`, true);
+      err(`  MEASUREMENT: failed saving #${measurement.measurementSequenceNumber}`, true);
       return null;
     }
   } else {
-    warn(`\n  RuuviTag ${tagID} is not whitelisted\n  Ignoring measurement ${measurement.measurementSequenceNumber} from it, not saved.`, true);
+    warn(`\n  WARN: RuuviTag ${tagID} is not whitelisted\n  Ignoring measurement #${measurement.measurementSequenceNumber} from it, not saved.`, true);
     return null;
   }
 };

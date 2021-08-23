@@ -8,24 +8,24 @@ const { trusted_tags } = require('../.trusted.json');
 const tagCap = 64;
 
 const checkValidTags = async () => {
-  info('\n  Checking RuuviTag whitelist...',false);
+  info('\n  CHECK: Checking RuuviTag whitelist...',false);
   if (trusted_tags.length <= tagCap) {
     for (trusted_tag of trusted_tags) {
       const { id, name } = trusted_tag;
       const tag = await Tag.findOne({id: id});
       if (!tag) {
-	info(`\n  RuuviTag ${id} does not pre-exist`, true);
+	info(`\n  CHECK: RuuviTag ${id} does not pre-exist`, true);
 	const wasTagSetupSuccess = setTag(
 	  id,
 	  name);
 	wasTagSetupSuccess
-	  ? log(`\n  New whitelisted RuuviTag ${id} setup successful`, true)
-	  : err(`\n  New whitelisted RuuviTag ${id} setup failed`, true);
+	  ? log(`\n  CHECK: New whitelisted RuuviTag ${id} setup successful`, true)
+	  : err(`\n  CHECK: New whitelisted RuuviTag ${id} setup failed`, true);
       } else {
-	log(`\n  Whitelisted RuuviTag ${id} pre-exists`,false);
+	log(`\n  CHECK: Whitelisted RuuviTag ${id} pre-exists`,false);
       }
     }
-    log('\n  Whitelist check-up done',false);
+    log('\n  CHECK: Whitelist check-up done',false);
     return true;
   } else {
     warn(`\n  WARN: `,true);
@@ -46,15 +46,15 @@ const getTagIndex = (tagID) => {
 const findTag = async (tagID) => {
   let foundTag = await Tag.findOne({id: tagID});
   if (!foundTag) {
-    warn(`\n  RuuviTag ${tagID} does not pre-exist`, true);
+    warn(`\n  FIND: RuuviTag ${tagID} does not pre-exist`, true);
     return null;
   }
-  info(`\n  Found RuuviTag ${tagID}`, false);
+  info(`\n  FIND: Found RuuviTag ${tagID}`, false);
   return foundTag;
 };
 
 const setTag = async (tagID, name) => {
-  info(`\n  Saving new RuuviTag ${tagID}...`, false);
+  info(`\n  SET: Saving new RuuviTag ${tagID}...`, false);
   const newTag = new Tag({
     name: name ? name : `newtag-${tagID}`,
     id: tagID
@@ -62,10 +62,10 @@ const setTag = async (tagID, name) => {
 
   try {
     await newTag.save();
-    log(`\n  New RuuviTag ${tagID} successfully saved`, true);
+    log(`\n  SET: New RuuviTag ${tagID} successfully saved`, true);
     return true;
   } catch (e) {
-    err(`\n  Failed saving new RuuviTag ${tagID}`, true);
+    err(`\n  ERR: Failed saving new RuuviTag ${tagID}`, true);
     return false;
   }
 };

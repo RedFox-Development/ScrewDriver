@@ -27,7 +27,9 @@ mongoose.set('useCreateIndex', true);
 const { trusted_tags } = require('./.trusted.json');
 
 const oneMinute = 60*1000;
-const measurementSaveInterval = Math.floor(0.5*oneMinute);
+const measurementCaptureInterval = process.env.NODE_ENV === 'production'
+  ? Math.floor(0.5*oneMinute)
+  : Math.floor(0.1*oneMinute);
 
 let measurements = [];
 
@@ -36,9 +38,9 @@ let measurements = [];
 const initMongoose = () => {
   try {
     mongoose.connect(process.env.MONGO);
-    log('\n  MongoDB Atlas: connected', true);
+    log('\n  SETUP: MongoDB Atlas: connected', true);
   } catch (e) {
-    warn('\n  MongoDB Atlas: connection failed', true);
+    warn('\n  SETUP: MongoDB Atlas: connection failed', true);
   }
 };
 
@@ -67,36 +69,37 @@ const createDriver = () => {
 };
 
 const startScrewingAround = () => {
-  checkWhitelist().then(checkupComplete => {
+  if (checkWhitelist()) {
+    info(`\n  SETUP: Measurement capture interval set to ${measurementCaptureInterval/1000}s.`,false);
     ruuvi.on('found', tag => {
       let lastUpdate = null;
       let tagIndex = null;
-      isTagWhitelisted(tag.id).then(isIt => {
-	if (isIt) {
-	  info(`\n  Found a pre-existing RuuviTag, ID: ${tag.id}.`,false);
-	  tag.on('updated', data => {
-	    const timestamp = new Date().valueOf();
-	    tagIndex = getTagIndex(tag.id);
-	    if (timestamp - lastUpdate > measurementSaveInterval && tagIndex > -1) {
-	      lastUpdate = timestamp;
-	      setMeasurement(data, tag.id, timestamp);
-	      measurements[tagIndex] = {...data, id: tag.id};
-              // log(JSON.stringify(data, null, '  '),false);
-            } else {
-              info(`\n  Trusted RuuviTag ${tag.id}, measurement ${data.measurementSequenceNumber} ignored.`, false);
-            }
-	  });
-        } else {
-          info(`\n  Found a new RuuviTag, ID: ${tag.id}\n  Ignoring measurements from RuuviTag ${tag.id}.`, false);
-        }
-      });
-      // log(JSON.stringify(tag, null, '  '),false);
+      if (isTagWhitelisted(tag.id)) {
+	info(`\n  TAG: Found a pre-existing RuuviTag, ID: ${tag.id}.`,false);
+	tag.on('updated', data => {
+	  const timestamp = new Date().valueOf();
+	  tagIndex = getTagIndex(tag.id);
+	  if (timestamp - lastUpdate >= measurementCaptureInterval && tagIndex > -1) {
+	    lastUpdate = timestamp;
+	    setMeasurement(data, tag.id, timestamp);
+	    measurements[tagIndex] = {...data, id: tag.id};
+            // log(JSON.stringify(data, null, '  '),false);
+          } else {
+            info(`\n  IGNORE: Trusted RuuviTag ${tag.id}, measurement ${data.measurementSequenceNumber} ignored.`, false);
+          }
+	});
+      } else {
+        info(`\n  IGNORE: Found a new RuuviTag, ID: ${tag.id}\n  Ignoring measurements from RuuviTag ${tag.id}.`, false);
+      }
     });
-    
+    // log(JSON.stringify(tag, null, '  '),false);
+        
     ruuvi.on('warning', message => {
-      err('\n  Ruuvi warning', true);
+      warn('\n  WARN: Ruuvi warning', true);
     });
-  });
+  } else {
+    err(`\n  ERR: ScrewDriver err: whitelist chickup failure`,true);
+  }
 };
 
 const stopScrewingAround = () => {
@@ -115,7 +118,7 @@ if (module.parent === null) {
   const port = process.env.DRIVER_PORT || 4001;
   initMongoose();
   driver.listen(port, () => {
-    info(`\n  ScrewDriver running on port ${port}`, true);
+    info(`\n  START: ScrewDriver running on port ${port}.\n  ScrewDriver running in ${process.env.NODE_ENV} mode.`, true);
     startScrewingAround();
   });
 }

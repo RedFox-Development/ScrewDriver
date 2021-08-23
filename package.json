@@ -15,6 +15,10 @@
     "node-ruuvitag": "^4.6.1"
   },
   "scripts": {
-    "start": "node screwdriver.js"
+    "prod": "NODE_ENV=production node screwdriver.js",
+    "dev": "NODE_ENV=development nodemon screwdriver.js"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
   }
 }
