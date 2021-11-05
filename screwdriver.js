@@ -82,7 +82,7 @@ const startScrewingAround = () => {
 	  if (timestamp - lastUpdate >= measurementCaptureInterval && tagIndex > -1) {
 	    lastUpdate = timestamp;
 	    setMeasurement(data, tag.id, timestamp);
-	    measurements[tagIndex] = {...data, id: tag.id};
+	    measurements[tagIndex] = {...data, id: tag.id, timestamp: timestamp};
             // log(JSON.stringify(data, null, '  '),false);
           } else {
             info(`\n  IGNORE: Trusted RuuviTag ${tag.id}, measurement ${data.measurementSequenceNumber} ignored.`, false);
