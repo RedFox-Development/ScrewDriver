@@ -38,13 +38,11 @@ const RuuviTag = (props) => {
       })
       .catch((err) => console.error(err));    
   }
-  
-  useEffect(() => getReadings(), [getReadings]);
-
-  setTimeout(() => getReadings(), 30000);
+  useEffect(() => getReadings(), []);
+  setTimeout(() => getReadings(), 15000);
   
   return measurement
-    ? <Measurement {...sampleMeasurement} tagName={props.name} withGauges={true} tagMode={props.tagMode} />
+    ? <Measurement {...measurement} driver={props.driver} tagName={props.name} withGauges={true} tagMode={props.tagMode} />
     : <h3>{props.name}</h3>;
 
 };

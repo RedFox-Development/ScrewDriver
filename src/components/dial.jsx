@@ -19,7 +19,7 @@ const WithBar = ({value}) => {
 
 const defaultGaugeOptions = {
   animationDuration: 2,
-  showValue: true,
+  label: function (value) {return value.toFixed(1);},
   initialValue: 0
 };
 
@@ -277,7 +277,7 @@ const Label = ({type, mode}) => {
 
 export const Temperature = (props) => {
   return <section id={props.id} data-testid={props.id} >
-    <Gauge type='temperature' mode={props.mode} value={props.value} />
+    <Gauge type='temperature' mode={props.mode} value={props.value} label={`${props.value.toFixed(2)}`} />
     {props.name && <p>{props.name}</p>}
   </section>
 };
