@@ -20,6 +20,8 @@ import RuuviTag from './components/ruuvitag';
 const Frontend = () => {
 
 
+
+
   let currentTemp = 5;
 
   return <section>

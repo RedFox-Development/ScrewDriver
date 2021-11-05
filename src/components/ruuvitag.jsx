@@ -1,8 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-import { Temperature, Humidity, Pressure, Voltage, RSSI } from './dial';
 import Measurement from './measurement';
 
 const sampleMeasurement = {
@@ -16,51 +15,38 @@ const sampleMeasurement = {
   tag: 'tagID'
 };
 
-class RuuviTag extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      name: props.name,
-      id: props.id,
-      mode: props.tagMode ?? 'default',
-      gauges: props.useGauges ?? false,
-      measurement: null
-    };
-  }
+const generateTagDataUrl = (tagID) => {
+  const ip = process.env.REACT_APP_DRIVER_IP ?? null;
+  const port = process.env.REACT_APP_DRIVER_PORT ?? null;
+  return tagID && ip && port
+    ? `http://${process.env.REACT_APP_DRIVER_IP}:${process.env.REACT_APP_DRIVER_PORT}/data/${tagID}`
+    : null;
+};
 
-  async getReadings() {
-    const driverPort = process.env.REACT_APP_DRIVER_PORT || 4001;
-    const localIP = process.env.REACT_APP_DRIVER_IP || 'localhost';
-    const url = `http://${localIP}:${driverPort}/data/${this.state.id}`;
+const RuuviTag = (props) => {
+  const [measurement, setMeasurement] = useState(null);
+  const url = generateTagDataUrl(props.id);
 
-    try {
-      await axios.get(`${url}`).then((response) => {
-      	const {data} = response;
-      	if (data) {
-          this.setState({
-            measurement: data
-          });
+  async function getReadings() {
+    await axios.get(`${url}`)
+      .then((response) => {
+        const {data} = response;
+        console.log(response);
+        if (data) {
+          setMeasurement(data);
         }
-      });
-    } catch (e) {
-      console.log(e.message);
-    }
+      })
+      .catch((err) => console.error(err));    
   }
   
-  componentDidMount() {
-    this.getReadings();
-  }
+  useEffect(() => getReadings(), [getReadings]);
 
-  getMinuteInMS() {
-    return 1000*60;
-  }
+  setTimeout(() => getReadings(), 30000);
+  
+  return measurement
+    ? <Measurement {...sampleMeasurement} tagName={props.name} withGauges={true} tagMode={props.tagMode} />
+    : <h3>{props.name}</h3>;
 
-  render() {
-    setTimeout(() => this.getReadings(), this.getMinuteInMS());
-    return this.state.measurement
-      ? <Measurement {...sampleMeasurement} tagName={this.state.name} withGauges={true} tagMode={this.state.mode} />
-      : <h3>{this.state.name}</h3>;
-  }
-}
+};
 
 export default RuuviTag;
