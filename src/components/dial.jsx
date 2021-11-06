@@ -1,17 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import SvgGauge from 'svg-gauge';
 
-import { getTempSettings } from '../tools/tempOptions';
+import { getTempSettings, colors_t } from '../tools/tempOptions';
+import { getHumidOptionsm, colors_h } from '../tools/humidOptions';
+
 import '../styles/gauge.css';
-
-//"rgb(3,252,102)";
-//          } else if (value < 25) {
-  //          return "rgb(148,252,3)";
-    //      } else if (value < 28) {
-      //      return "rgb(252,190,3)";
-        //  } else {
-          //  return "rgb(252,48,3)";
-
 
 const WithBar = ({value}) => {
   return value;
@@ -23,127 +16,61 @@ const defaultGaugeOptions = {
   initialValue: 0
 };
 
-/**
- * default
- * outdoor-winter
- * freezer
- * fridge
- * outdoor-summer
- * sauna
- * indoor
- */
+const modes = [
+  'outdoor-winter','freezer','fridge',
+  'outdoor-summer', 'sauna', 'indoor'
+];
+
+const humidGaugeOptions = (mode) => {
+  const humidOpt = null;
+
+  if (modes.includes(mode)) {
+    return {
+      min: humidOpt.min,
+      max: humidOpt.max,
+    };
+  }
+};
+
 const tempGaugeOptions = (mode) => {
-  const coldModes = [];
-  const warmModes = [];
-
   const tempOpt = getTempSettings(mode);
+  
+  function getRangeClass(value) {
+    if (value < tempOpt.alarm_l) {
+      return 'veryLow';
+    } else if (value < tempOpt.warn_l) {
+      return 'low';
+    } else if (value < tempOpt.warn_h) {
+      return 'medium';
+    } else if (value < tempOpt.alarm_h) {
+      return 'high';
+    } else {
+      return 'veryHigh';
+    }
+  }
 
-  switch (mode) {
-    case 'outdoor-winter': return {
-      min: -50,
-      max: 20,
-      valueDialClass: 'value-cold',
-      valueClass: 'value-text-cold',
+  if (modes.includes(mode)) {
+    return {
+      min: tempOpt.min,
+      max: tempOpt.max,
+      valueDialClass: tempOpt.valueDialClass,
+      valueClass: tempOpt.valueClass,
       color: function(value) {
-        if (value < -25) {
-          return "rgb(3,252,102)";
-        } else if (value < -15) {
-          return "rgb(148,252,3)";
-        } else if (value < -5) {
-          return "rgb(252,190,3)";
-        } else if (value < 5) {
-          return "rgb(252,190,3)";
+        if (value < tempOpt.alarm_l) {
+          return colors_t.veryLow;
+        } else if (value < tempOpt.warn_l) {
+          return colors_t.low;
+        } else if (value < tempOpt.warn_h) {
+          return colors_t.medium;
+        } else if (value < tempOpt.alarm_h) {
+          return colors_t.high;
         } else {
-          return "rgb(252,48,3)";
+          return colors_t.veryHigh;
         }
       }
     };
-    case 'freezer': return {
-      min: -30,
-      max: 30,
-      valueDialClass: 'value-cold',
-      valueClass: 'value-text-cold',
-      color: function(value) {
-        if (value < -20) {
-          return "rgb(3,252,102)";
-        } else if (value < -15) {
-          return "rgb(148,252,3)";
-        } else if (value < -5) {
-          return "rgb(252,190,3)";
-        } else {
-          return "rgb(252,48,3)";
-        }
-      }
-    };
-    case 'fridge': return {
-      min: -5,
-      max: 30,
-      valueDialClass: 'value-cold',
-      valueClass: 'value-text-cold',
-      color: function(value) {
-        if (value < 6) {
-          return "rgb(3,252,102)";
-        } else if (value < 10) {
-          return "rgb(148,252,3)";
-        } else if (value < 14) {
-          return "rgb(252,190,3)";
-        } else {
-          return "rgb(252,48,3)";
-        }
-      }
-    };
-    case 'outdoor-summer': return {
-      min: -10,
-      max: 50,
-      valueDialClass: 'value-warm',
-      valueClass: 'value-text-warm',
-      color: function(value) {
-        if (value < 10) {
-          return "rgb(3,252,102)";
-        } else if (value < 20) {
-          return "rgb(148,252,3)";
-        } else if (value < 27) {
-          return "rgb(252,190,3)";
-        } else {
-          return "rgb(252,48,3)";
-        }
-      }
-    };
-    case 'sauna': return {
-      min: 5,
-      max: 130,
-      valueDialClass: 'value-warm',
-      valueClass: 'value-text-warm',
-      color: function(value) {
-        if (value < 40) {
-          return "rgb(3,252,102)";
-        } else if (value < 60) {
-          return "rgb(148,252,3)";
-        } else if (value < 80) {
-          return "rgb(252,190,3)";
-        } else {
-          return "rgb(252,48,3)";
-        }
-      }
-    };
-    case 'indoor': return {
-      min: 5,
-      max: 50,
-      valueDialClass: 'value-warm',
-      valueClass: 'value-text-warm',
-      color: function(value) {
-        if (value < 18) {
-          return "rgb(3,252,102)";
-        } else if (value < 25) {
-          return "rgb(148,252,3)";
-        } else if (value < 28) {
-          return "rgb(252,190,3)";
-        } else {
-          return "rgb(252,48,3)";
-        }
-      }
-    };
-    default: return {
+  } else {
+    return {
       min: -50,
       max: 50,
       valueDialClass: 'value',
@@ -153,37 +80,6 @@ const tempGaugeOptions = (mode) => {
 };
 
 const ranges = {
-  temperature: {
-    minMax: [-80.000,160.000],
-    freezerAlert: -15.000,
-    fridgeAlert: 6.000,
-    saunaAlert: 100.000,
-    verylow: {
-      cold: [-50.000,-25.001],
-      warm: [-5.000,4.999],
-      sauna: [22.000,39.999]
-    },
-    low: {
-      cold: [-25.000,-15.001],
-      warm: [5.000,13.999],
-      sauna: [40.000,59.999]
-    },
-    normal: {
-      cold: [-15.000,-2.001],
-      warm: [14.000,21.999],
-      sauna: [60.000,79.999]
-    },
-    high: {
-      cold: [-2.000,6.999],
-      warm: [22.000, 27.999],
-      sauna: [80.000,94.999]
-    },
-    veryhigh: {
-      cold: [7.000,17.999],
-      warm: [28.000,42.000],
-      sauna: [95.000,110.000]
-    }
-  },
   humidity: {
     minMax: [0.000,163.835],
     miscalibrationAlert: 120.000,

@@ -10,51 +10,38 @@
   fill: transparent;
 }
 .gauge-container > .gauge .value {
-  stroke: var(--red_custom);
+  stroke: steelblue;;
   stroke-width: 1.5;
   fill: transparent;
 }
 .gauge-container > .gauge .value-text {
-  fill: var(--red_custom);
+  fill: steelblue;
   font-family: sans-serif;
   font-weight: lighter;
   font-size: 1em;
 }
 
 .gauge-container > .gauge .value-cold {
-  stroke: lightskyblue;
+  stroke: steelblue;
   stroke-width: 1.5;
   fill: transparent;
 }
+.gauge-container > .gauge .value-warm {
+  stroke: olivedrab;
+  stroke-width: 1.5;
+  fill: transparent;
+}
+
 .gauge-container > .gauge .value-text-cold {
-  fill: lightskyblue;
   font-family: sans-serif;
   font-weight: lighter;
   font-size: 1em;
-}
-
-.gauge-container > .gauge .value-warm {
-  stroke: orange;
-  stroke-width: 1.5;
-  fill: transparent;
+  fill: steelblue;
 }
 .gauge-container > .gauge .value-text-warm {
   font-family: sans-serif;
   font-weight: lighter;
   font-size: 1em;
-}
-
-
-.gauge-container > .gauge .value-text-warm .low {
-  fill: var(--low_w);
-}
-.gauge-container > .gauge .value-text-warm .medium {
-  fill: var(--med_w);
-}
-.gauge-container > .gauge .value-text-warm .elevated {
-  fill: var(--elev_w);
-}
-.gauge-container > .gauge .value-text-warm .high {
-  fill: var(--high_w);
+  fill: olivedrab;
 }
 

@@ -1,6 +1,7 @@
 
 import React from 'react';
 
+import { getTexts } from '../tools/texts';
 import { Temperature, Humidity, Pressure, Voltage, RSSI } from './dial';
 
 type MeasurementTypes = {
@@ -32,7 +33,7 @@ function sanitiseSeconds(seconds: number) {
   return m >= 60 ? `~ ${Math.floor(m/60)}h ${m%60}min` : m < 1 ? s >= 30 ? `~ ${m+1}min` : `< ${m+1}min` : `~ ${s >= 30 ? m+1 : m}min`;
 }
 
-function sanitiseDatetime(datetimeMS: number) {
+function sanitiseDatetime(datetimeMS: number, ago: string) {
   const dt = new Date(datetimeMS);
   const today = new Date();
   const diff = (today.valueOf()-dt.valueOf())/1000;
@@ -45,13 +46,17 @@ function sanitiseDatetime(datetimeMS: number) {
   const time = `${dt.getHours() < 10 ? `0${dt.getHours()}` : dt.getHours()}:${dt.getMinutes() < 10 ? `0${dt.getMinutes()}` : dt.getMinutes()}`;
   
   return isToday(datetimeMS)
-    ? `${sanitiseSeconds(diff)} ago`
+    ? `${sanitiseSeconds(diff)} ${ago}`
     : `${day}.${month}.${dt.getFullYear()} - ${time}`;
 }
 
 const Measurement = (props: MeasurementTypes) => {
   const { withGauges, tagMode, tagName, tag, timestamp, driver, temperature, humidity, pressure, rssi, battery } = props;
 
+  const {
+    header, when, driver_label, humidity_label_alt,
+    pressure_label, signal_label, battery_label_alt
+  } = getTexts('fi');
   return <section style={{
     border: '4px outset #808080',
     borderRadius: '6px',
@@ -60,15 +65,15 @@ const Measurement = (props: MeasurementTypes) => {
     padding: '1rem'
   }}>
     <h3>{tagName}</h3>
-    <p>Measured: {sanitiseDatetime(timestamp)}</p>
-    <p>Driver: {driver}</p>
+    <p>{when[0]}: {sanitiseDatetime(timestamp, when[1])}</p>
+    <p>{driver_label}: {driver}</p>
     {withGauges
       ? <Temperature mode={tagMode} value={temperature} id={`measurement-test`} withLabel={true} />
       : <p>Temperature: {temperature} °C</p>}
-    <p>Relative humidity: {humidity} %</p>
-    <p>Atmospheric pressure: {pressure/100} hPa</p>
-    <p>RSSI: {rssi}</p>
-    <p>Tag battery: {battery} V</p>
+    <p>{humidity_label_alt}: {humidity} %</p>
+    <p>{pressure_label}: {pressure/100} hPa</p>
+    <p>{signal_label}: {rssi}</p>
+    <p>{battery_label_alt}: {battery} V</p>
   </section>;
 };
 
