@@ -2,7 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import SvgGauge from 'svg-gauge';
 
 import { getTempSettings, colors_t } from '../tools/tempOptions';
-import { getHumidOptionsm, colors_h } from '../tools/humidOptions';
+import { getHumidSettings, colors_h } from '../tools/humidOptions';
+import { getPresSettings, colors_p } from '../tools/presOptions';
 
 import '../styles/gauge.css';
 
@@ -10,10 +11,31 @@ const WithBar = ({value}) => {
   return value;
 };
 
-const defaultGaugeOptions = {
-  animationDuration: 2,
-  label: function (value) {return value.toFixed(1);},
-  initialValue: 0
+const defaultGaugeOptions = { 
+  temperature: {
+    animationDuration: 2,
+    label: function (value) {
+      return `${value.toFixed(1)} °C`;},
+    initialValue: 0
+  },
+  humidity: {
+    animationDuration: 2,
+    label: function (value) {
+      return `${value.toFixed(1)} %`;},
+    initialValue: 0
+  },
+  pressure: {
+    animationDuration: 2,
+    label: function (value) {
+      return `${(value/100).toFixed(1)} hPa`;},
+    initialValue: 101300
+  },
+  battery: {
+    animationDuration: 2,
+    label: function (value) {
+      return `${(value/1000).toFixed(2)} V`;},
+    initialValue: 2400
+  }
 };
 
 const modes = [
@@ -21,13 +43,68 @@ const modes = [
   'outdoor-summer', 'sauna', 'indoor'
 ];
 
+const presGaugeOptions = (mode) => {
+  const presOpt = getPresSettings(mode);
+
+  if (modes.includes(mode)) {
+    return {
+      min: presOpt.min,
+      max: presOpt.max,
+      valueDialClass: presOpt.valueDialClass,
+      valueClass: presOpt.valueClass,
+      color: function(value) {
+        if (value < presOpt.alarm_l) {
+          return colors_p.veryLow;
+        } else if (value < presOpt.warn_l) {
+          return colors_p.low;
+        } else if (value < presOpt.warn_h) {
+          return colors_p.medium;
+        } else if (value < presOpt.alarm_h) {
+          return colors_p.high;
+        } else { 
+          return colors_p.veryHigh;
+        }
+      }
+    };
+  } else {
+    return {
+      min: 50000,
+      max: 115534,
+      valueDialClass: 'value',
+      valueClass: 'value-text'
+    };
+  }
+};
+
 const humidGaugeOptions = (mode) => {
-  const humidOpt = null;
+  const humidOpt = getHumidSettings(mode);
 
   if (modes.includes(mode)) {
     return {
       min: humidOpt.min,
       max: humidOpt.max,
+      valueDialClass: humidOpt.valueDialClass,
+      valueClass: humidOpt.valueClass,
+      color: function(value) {
+        if (value < humidOpt.alarm_l) {
+          return colors_h.veryLow;
+        } else if (value < humidOpt.warn_l) {
+          return colors_h.low;
+        } else if (value < humidOpt.warn_h) {
+          return colors_h.medium;
+        } else if (value < humidOpt.alarm_h) {
+          return colors_h.high;
+        } else {
+          return colors_h.veryHigh;
+        }
+      }
+    };
+  } else {
+    return {
+      min: -50,
+      max: 50,
+      valueDialClass: 'value',
+      valueClass: 'value-text'
     };
   }
 };
@@ -80,39 +157,6 @@ const tempGaugeOptions = (mode) => {
 };
 
 const ranges = {
-  humidity: {
-    minMax: [0.000,163.835],
-    miscalibrationAlert: 120.000,
-    verylow: {
-      cold: [0.000,9.999],
-      warm: [0.000,29.999]
-    },
-    low: {
-      cold: [10.000,19.999],
-      warm: [30.000,49.999]
-    },
-    normal: {
-      cold: [20.000,39.999],
-      warm: [50.000,69.999]
-    },
-    high: {
-      cold: [40.000,89.999],
-      warm: [70.000,89.999]
-    },
-    veryhigh: [90.000,119.999]
-  },
-  pressure: {
-    hPaDrop: [0,5],
-    hPaDropNotice: 1,
-    hPaDropAlert: 3,
-    Pa_hPa: 100,
-    minMax: [50000,115534],
-    verylow: [80000,89999],
-    low: [90000,99999],
-    normal: [100000,102999],
-    high: [103000,109999],
-    veryhigh: [110000,115534]
-  },
   rssi: {
     low: [-120,-71],
     nominal: [-70,20]
@@ -140,11 +184,11 @@ const Gauge = ({type, mode, value, name}) => {
     if (!gaugeRef.current) {
       switch (type) {
         case 'temperature': {
-          options = {...defaultGaugeOptions, ...tempGaugeOptions(mode)};
+          options = {...defaultGaugeOptions.temperature, ...tempGaugeOptions(mode)};
           break;
         }
-        case 'humidity': options = {...defaultGaugeOptions}; break;
-        case 'pressure': options = {...defaultGaugeOptions}; break;
+        case 'humidity': options = {...defaultGaugeOptions.humidity, ...humidGaugeOptions(mode)}; break;
+        case 'pressure': options = {...defaultGaugeOptions.pressure, ...presGaugeOptions(mode)}; break;
         case 'voltage': options = {...defaultGaugeOptions}; break;
         case 'rssi': options = {...defaultGaugeOptions}; break;
         default: options = {...defaultGaugeOptions}; break;
@@ -173,14 +217,24 @@ const Label = ({type, mode}) => {
 
 export const Temperature = (props) => {
   return <section id={props.id} data-testid={props.id} >
-    <Gauge type='temperature' mode={props.mode} value={props.value} label={`${props.value.toFixed(2)}`} />
+    <Gauge type='temperature' mode={props.mode} value={props.value} />
     {props.name && <p>{props.name}</p>}
   </section>
 };
 
-export const Humidity = () => {};
+export const Humidity = (props) => {
+  return <section id={props.id} data-testid={props.id} >
+    <Gauge type='humidity' mode={props.mode} value={props.value} />
+    {props.name && <p>{props.name}</p>}
+  </section>
+};
 
-export const Pressure = () => {};
+export const Pressure = (props) => {
+  return <section id={props.id} data-testid={props.id} >
+    <Gauge type='pressure' mode={props.mode} value={props.value} />
+    {props.name && <p>{props.name}</p>}
+  </section>
+};
 
 export const RSSI = () => {};
 

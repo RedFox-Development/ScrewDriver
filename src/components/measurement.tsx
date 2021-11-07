@@ -68,10 +68,14 @@ const Measurement = (props: MeasurementTypes) => {
     <p>{when[0]}: {sanitiseDatetime(timestamp, when[1])}</p>
     <p>{driver_label}: {driver}</p>
     {withGauges
-      ? <Temperature mode={tagMode} value={temperature} id={`measurement-test`} withLabel={true} />
+      ? <Temperature mode={tagMode} value={temperature} id={`temp-measurement-test`} withLabel={true} />
       : <p>Temperature: {temperature} °C</p>}
-    <p>{humidity_label_alt}: {humidity} %</p>
-    <p>{pressure_label}: {pressure/100} hPa</p>
+    {withGauges
+      ? <Humidity mode={tagMode} value={humidity} id={`humid-measurement-test`} withLabel={true} />
+      : <p>{humidity_label_alt}: {humidity} %</p>}
+    {withGauges
+      ? <Pressure mode={tagMode} value={pressure} id={`pres-measurement-test`} withLabel={true} />
+      : <p>{pressure_label}: {pressure/100} hPa</p>}
     <p>{signal_label}: {rssi}</p>
     <p>{battery_label_alt}: {battery} V</p>
   </section>;

@@ -1,5 +1,13 @@
 
-export const colors_h = {
+export const pressureVariations = {
+  incDecHPAfor8m: [1,-1],
+  incDecHPAinHourWarn: [1,-1],
+  incDecHPAinHourAlert: [3,-3],
+  loHPAtreshold: 1010,
+  hiHPAtreshold: 1017
+};
+
+export const colors_p = {
   veryLow: 'rgb(3,252,220)',
   low: 'rgb(3,252,102)',
   medium: 'rgb(148,252,3)',
@@ -13,23 +21,23 @@ function isCold(mode: string) {
 }
 
 const cold = {
-  min: 0.000,
-  max: 163.835,
-  warn_h: 40.000,
-  warn_l: 20.000,
-  alarm_h: 60.000,
-  alarm_l: 10.000,
+  min: 90000,
+  max: 110000,
+  warn_h: 102500,
+  warn_l: 99500,
+  alarm_h: 105000,
+  alarm_l: 95000,
   valueDialClass: 'value-cold',
   valueClass: 'value-text-cold'
 };
 
 const warm = {
-  min: 0.000,
-  max: 163.835,
-  warn_h: 70.000,
-  warn_l: 50.000,
-  alarm_h: 90.000,
-  alarm_l: 30.000,
+  min: 90000,
+  max: 110000,
+  warn_h: 102500,
+  warn_l: 99500,
+  alarm_h: 105000,
+  alarm_l: 95000,
   valueDialClass: 'value-warm',
   valueClass: 'value-text-warm'
 };
@@ -40,6 +48,6 @@ const deFault = {
   valueClass: 'value-text'
 };
 
-export const getHumidSettings = (mode: string) => {
+export const getPresSettings = (mode: string) => {
   return isCold(mode) ? cold : warm;
 };
