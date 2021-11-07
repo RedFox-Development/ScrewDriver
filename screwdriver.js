@@ -28,7 +28,7 @@ const { trusted_tags } = require('./.trusted.json');
 
 const oneMinute = 60*1000;
 const measurementCaptureInterval = process.env.NODE_ENV === 'production'
-  ? Math.floor(0.5*oneMinute)
+  ? Math.floor(0.25*oneMinute)
   : Math.floor(0.1*oneMinute);
 
 let measurements = [];
