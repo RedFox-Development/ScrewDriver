@@ -4,6 +4,7 @@ import SvgGauge from 'svg-gauge';
 import { getTempSettings, colors_t } from '../tools/tempOptions';
 import { getHumidSettings, colors_h } from '../tools/humidOptions';
 import { getPresSettings, colors_p } from '../tools/presOptions';
+import { getVoltSettings, colors_v } from '../tools/voltOptions';
 
 import '../styles/gauge.css';
 
@@ -42,6 +43,39 @@ const modes = [
   'outdoor-winter','freezer','fridge',
   'outdoor-summer', 'sauna', 'indoor'
 ];
+
+const voltGaugeOptions = (mode) => {
+  const voltOpt = getVoltSettings(mode);
+  
+  if (modes.includes(mode)) {
+    return {
+      min: voltOpt.min,
+      max: voltOpt.max,
+      valueDialClass: voltOpt.valueDialClass,
+      valueClass: voltOpt.valueClass,
+      color: function(value) {
+        if (value < voltOpt.alarm_l) {
+	  return colors_v.veryLow;
+	} else if (value < voltOpt.warn_l) {
+	  return colors_v.low;
+	} else if (value > voltOpt.warn_h) {
+	  return colors_v.high;
+	} else if (value > voltOpt.alarm_h) {
+	  return colors_v.veryHigh;
+	} else {
+	  return colors_v.medium;
+	}
+      }
+    };
+  } else {
+    return {
+      min: 1800,
+      max: 3300,
+      valueDialClass: 'value',
+      valueClass: 'value-text'
+    };
+  }
+};
 
 const presGaugeOptions = (mode) => {
   const presOpt = getPresSettings(mode);
@@ -111,20 +145,6 @@ const humidGaugeOptions = (mode) => {
 
 const tempGaugeOptions = (mode) => {
   const tempOpt = getTempSettings(mode);
-  
-  function getRangeClass(value) {
-    if (value < tempOpt.alarm_l) {
-      return 'veryLow';
-    } else if (value < tempOpt.warn_l) {
-      return 'low';
-    } else if (value < tempOpt.warn_h) {
-      return 'medium';
-    } else if (value < tempOpt.alarm_h) {
-      return 'high';
-    } else {
-      return 'veryHigh';
-    }
-  }
 
   if (modes.includes(mode)) {
     return {
@@ -189,7 +209,7 @@ const Gauge = ({type, mode, value, name}) => {
         }
         case 'humidity': options = {...defaultGaugeOptions.humidity, ...humidGaugeOptions(mode)}; break;
         case 'pressure': options = {...defaultGaugeOptions.pressure, ...presGaugeOptions(mode)}; break;
-        case 'voltage': options = {...defaultGaugeOptions}; break;
+        case 'voltage': options = {...defaultGaugeOptions.battery, ...voltGaugeOptions(mode)}; break;
         case 'rssi': options = {...defaultGaugeOptions}; break;
         default: options = {...defaultGaugeOptions}; break;
       }
@@ -238,4 +258,9 @@ export const Pressure = (props) => {
 
 export const RSSI = () => {};
 
-export const Voltage = () => {};
+export const Voltage = (props) => {
+  return <section id={props.id} data-testid={props.id} >
+    <Gauge type='voltage' mode={props.mode} value={props.value} />
+    {props.name && <p>{props.name}</p>}
+  </section>
+};

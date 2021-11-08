@@ -76,8 +76,11 @@ const Measurement = (props: MeasurementTypes) => {
     {withGauges
       ? <Pressure mode={tagMode} value={pressure} id={`pres-measurement-test`} withLabel={true} />
       : <p>{pressure_label}: {pressure/100} hPa</p>}
-    <p>{signal_label}: {rssi}</p>
-    <p>{battery_label_alt}: {battery} V</p>
+    {withGauges
+      ? <Voltage mode={tagMode} value={battery} id={`volt-measurement-test`} withLabel={true} />
+      : <p>{battery_label_alt}: {(battery/1000).toFixed(2)} V</p>
+    }
+    <p>{signal_label}: {rssi}</p>    
   </section>;
 };
 
