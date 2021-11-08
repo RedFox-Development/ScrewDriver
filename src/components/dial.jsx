@@ -5,6 +5,7 @@ import { getTempSettings, colors_t } from '../tools/tempOptions';
 import { getHumidSettings, colors_h } from '../tools/humidOptions';
 import { getPresSettings, colors_p } from '../tools/presOptions';
 import { getVoltSettings, colors_v } from '../tools/voltOptions';
+import { getRSSISettings, colors } from '../tools/rssiOptions';
 
 import '../styles/gauge.css';
 
@@ -36,6 +37,13 @@ const defaultGaugeOptions = {
     label: function (value) {
       return `${(value/1000).toFixed(2)} V`;},
     initialValue: 2400
+  },
+  rssi: {
+    animationDuration: 2,
+    label: function (value) {
+      return `RSSI: ${value}`
+    },
+    initialValue: -10
   }
 };
 
@@ -43,6 +51,30 @@ const modes = [
   'outdoor-winter','freezer','fridge',
   'outdoor-summer', 'sauna', 'indoor'
 ];
+
+const rssiGaugeOptions = (mode) => {
+  const rssiOpt = getRSSISettings(mode);
+
+  return {
+    min: rssiOpt.min,
+    max: rssiOpt.max,
+    valueDialClass: rssiOpt.valueDialClass,
+    valueClass: rssiOpt.valueClass,
+    color: function (value) {
+      if (value < rssiOpt.alarm_h) {
+	return colors.veryHigh;
+      } else if (value < rssiOpt.warn_h) {
+	return colors.high;
+      } else if (value < rssiOpt.warn_l) {
+	return colors.medium;
+      } else if (value < rssiOpt.alarm_l) {
+	return colors.low;
+      } else {
+	return colors.veryLow;
+      }
+    }
+  };
+};
 
 const voltGaugeOptions = (mode) => {
   const voltOpt = getVoltSettings(mode);
@@ -210,7 +242,7 @@ const Gauge = ({type, mode, value, name}) => {
         case 'humidity': options = {...defaultGaugeOptions.humidity, ...humidGaugeOptions(mode)}; break;
         case 'pressure': options = {...defaultGaugeOptions.pressure, ...presGaugeOptions(mode)}; break;
         case 'voltage': options = {...defaultGaugeOptions.battery, ...voltGaugeOptions(mode)}; break;
-        case 'rssi': options = {...defaultGaugeOptions}; break;
+        case 'rssi': options = {...defaultGaugeOptions.rssi, ...rssiGaugeOptions(mode)}; break;
         default: options = {...defaultGaugeOptions}; break;
       }
 
@@ -256,7 +288,13 @@ export const Pressure = (props) => {
   </section>
 };
 
-export const RSSI = () => {};
+export const RSSI = (props) => {
+  return <section id={props.id} data-testid={props.id} >
+    <Gauge type='rssi' mode={props.mode} value={props.value} />
+    {props.name && <p>{props.name}</p>}
+  </section>
+};
+
 
 export const Voltage = (props) => {
   return <section id={props.id} data-testid={props.id} >

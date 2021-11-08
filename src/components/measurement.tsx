@@ -57,30 +57,40 @@ const Measurement = (props: MeasurementTypes) => {
     header, when, driver_label, humidity_label_alt,
     pressure_label, signal_label, battery_label_alt
   } = getTexts('fi');
+
+  const Gauges = () => {
+    return <section className='instruments' style={{
+      display: 'inline-flex', justifyContent: 'space-around'
+    }}>
+      <Temperature mode={tagMode} value={temperature} id={`temp-measurement-test`} withLabel={true} />
+      <Humidity mode={tagMode} value={humidity} id={`humid-measurement-test`} withLabel={true} />
+      <Pressure mode={tagMode} value={pressure} id={`pres-measurement-test`} withLabel={true} />
+      <Voltage mode={tagMode} value={battery} id={`volt-measurement-test`} withLabel={true} />
+      <RSSI mode={tagMode} value={rssi} id={`rssi-measurement-test`} withLabel={true} />
+    </section>;
+  };
+  const Readings = () => {
+    return <section className='readings' >
+      <p>Temperature: {temperature} °C</p>
+      <p>{humidity_label_alt}: {humidity} %</p>
+      <p>{pressure_label}: {pressure/100} hPa</p>
+      <p>{battery_label_alt}: {(battery/1000).toFixed(2)}</p>
+      <p>{signal_label}: {rssi}</p>
+    </section>;
+  };
+
   return <section style={{
     border: '4px outset #808080',
     borderRadius: '6px',
-    width: '20rem',
+    width: '60rem',
+    height: '20rem',
     margin: '1rem',
     padding: '1rem'
   }}>
     <h3>{tagName}</h3>
     <p>{when[0]}: {sanitiseDatetime(timestamp, when[1])}</p>
     <p>{driver_label}: {driver}</p>
-    {withGauges
-      ? <Temperature mode={tagMode} value={temperature} id={`temp-measurement-test`} withLabel={true} />
-      : <p>Temperature: {temperature} °C</p>}
-    {withGauges
-      ? <Humidity mode={tagMode} value={humidity} id={`humid-measurement-test`} withLabel={true} />
-      : <p>{humidity_label_alt}: {humidity} %</p>}
-    {withGauges
-      ? <Pressure mode={tagMode} value={pressure} id={`pres-measurement-test`} withLabel={true} />
-      : <p>{pressure_label}: {pressure/100} hPa</p>}
-    {withGauges
-      ? <Voltage mode={tagMode} value={battery} id={`volt-measurement-test`} withLabel={true} />
-      : <p>{battery_label_alt}: {(battery/1000).toFixed(2)} V</p>
-    }
-    <p>{signal_label}: {rssi}</p>    
+    {withGauges ? <Gauges/> : <Readings/>}    
   </section>;
 };
 

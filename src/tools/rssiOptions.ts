@@ -1,5 +1,5 @@
 
-export const colors_h = {
+export const colors = {
   veryLow: 'rgb(3,252,220)',
   low: 'rgb(3,252,102)',
   medium: 'rgb(148,252,3)',
@@ -13,23 +13,23 @@ function isCold(mode: string) {
 }
 
 const cold = {
-  min: 0.000,
-  max: 163.835,
-  warn_h: 40.000,
-  warn_l: 20.000,
-  alarm_h: 60.000,
-  alarm_l: 10.000,
+  min: -120,
+  max: 0,
+  warn_h: -80,
+  warn_l: -55,
+  alarm_h: -95,
+  alarm_l: -25,
   valueDialClass: 'value-cold',
   valueClass: 'value-text-cold'
 };
 
 const warm = {
-  min: 0.000,
-  max: 163.835,
-  warn_h: 70.000,
-  warn_l: 50.000,
-  alarm_h: 90.000,
-  alarm_l: 30.000,
+  min: -120,
+  max: 0,
+  warn_h: -80,
+  warn_l: -55,
+  alarm_h: -95,
+  alarm_l: -25,
   valueDialClass: 'value-warm',
   valueClass: 'value-text-warm'
 };
@@ -40,6 +40,15 @@ const deFault = {
   valueClass: 'value-text'
 };
 
-export const getHumidSettings = (mode: string) => {
-  return isCold(mode) ? cold : warm;
+export const getRSSISettings = (mode: string) => {
+  return {
+    min: -120,
+    max: 0,
+    warn_h: -80,
+    warn_l: -55,
+    alarm_h: -95,
+    alarm_l: -25,
+    valueDialClass: 'value',
+    valueClass: 'value-text'
+  };
 };

@@ -10,12 +10,12 @@
   fill: transparent;
 }
 .gauge-container > .gauge .value {
-  stroke: steelblue;;
+  stroke: darkgrey;
   stroke-width: 1.5;
   fill: transparent;
 }
 .gauge-container > .gauge .value-text {
-  fill: steelblue;
+  fill: darkgrey;
   font-family: sans-serif;
   font-weight: lighter;
   font-size: 1em;
